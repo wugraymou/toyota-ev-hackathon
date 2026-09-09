@@ -1,0 +1,132 @@
+{
+  "ALTIS": {
+    "sample_size": 243023,
+    "avg_annual_maintenance_cost": 9697.0,
+    "avg_annual_visits": 0.79
+  },
+  "RAV4": {
+    "sample_size": 148149,
+    "avg_annual_maintenance_cost": 14773.0,
+    "avg_annual_visits": 1.32
+  },
+  "YARIS": {
+    "sample_size": 103514,
+    "avg_annual_maintenance_cost": 8782.0,
+    "avg_annual_visits": 0.73
+  },
+  "C CROSS": {
+    "sample_size": 82914,
+    "avg_annual_maintenance_cost": 11184.0,
+    "avg_annual_visits": 1.97
+  },
+  "VIOS": {
+    "sample_size": 80070,
+    "avg_annual_maintenance_cost": 7858.0,
+    "avg_annual_visits": 0.79
+  },
+  "C CROSS HV": {
+    "sample_size": 58989,
+    "avg_annual_maintenance_cost": 12855.0,
+    "avg_annual_visits": 2.78
+  },
+  "WISH": {
+    "sample_size": 56192,
+    "avg_annual_maintenance_cost": 6080.0,
+    "avg_annual_visits": 0.42
+  },
+  "CAMRY-L": {
+    "sample_size": 50990,
+    "avg_annual_maintenance_cost": 9126.0,
+    "avg_annual_visits": 0.58
+  },
+  "SIENTA": {
+    "sample_size": 45858,
+    "avg_annual_maintenance_cost": 13418.0,
+    "avg_annual_visits": 1.27
+  },
+  "RAV4 HV": {
+    "sample_size": 43808,
+    "avg_annual_maintenance_cost": 18577.0,
+    "avg_annual_visits": 2.7
+  },
+  "Y CROSS": {
+    "sample_size": 27249,
+    "avg_annual_maintenance_cost": 6720.0,
+    "avg_annual_visits": 2.94
+  },
+  "ALTIS HV": {
+    "sample_size": 17333,
+    "avg_annual_maintenance_cost": 18993.0,
+    "avg_annual_visits": 2.68
+  },
+  "INNOVA": {
+    "sample_size": 17145,
+    "avg_annual_maintenance_cost": 5673.0,
+    "avg_annual_visits": 0.37
+  },
+  "CAMRY-h": {
+    "sample_size": 12629,
+    "avg_annual_maintenance_cost": 22856.0,
+    "avg_annual_visits": 1.19
+  },
+  "C-HR": {
+    "sample_size": 12208,
+    "avg_annual_maintenance_cost": 17099.0,
+    "avg_annual_visits": 1.46
+  },
+  "CAMRY": {
+    "sample_size": 9347,
+    "avg_annual_maintenance_cost": 18274.0,
+    "avg_annual_visits": 2.17
+  },
+  "COROLLA SP": {
+    "sample_size": 6232,
+    "avg_annual_maintenance_cost": 16165.0,
+    "avg_annual_visits": 2.22
+  },
+  "CAMRY HV": {
+    "sample_size": 5822,
+    "avg_annual_maintenance_cost": 21132.0,
+    "avg_annual_visits": 2.94
+  },
+  "PRIUS": {
+    "sample_size": 5778,
+    "avg_annual_maintenance_cost": 21055.0,
+    "avg_annual_visits": 1.7
+  },
+  "PRIUS C": {
+    "sample_size": 5629,
+    "avg_annual_maintenance_cost": 18407.0,
+    "avg_annual_visits": 1.64
+  },
+  "AURIS": {
+    "sample_size": 4326,
+    "avg_annual_maintenance_cost": 18781.0,
+    "avg_annual_visits": 1.46
+  },
+  "CROWN HV": {
+    "sample_size": 3414,
+    "avg_annual_maintenance_cost": 14075.0,
+    "avg_annual_visits": 3.17
+  },
+  "PRIUS PHV": {
+    "sample_size": 2445,
+    "avg_annual_maintenance_cost": 16682.0,
+    "avg_annual_visits": 2.61
+  },
+  "bZ4X": {
+    "sample_size": 3037,
+    "avg_annual_maintenance_cost": 10452.0,
+    "avg_annual_visits": 2.69
+  },
+  "PRIUS α": {
+    "sample_size": 2091,
+    "avg_annual_maintenance_cost": 20666.0,
+    "avg_annual_visits": 2.16
+  },
+  "COROLLA X": {
+    "sample_size": 1241,
+    "avg_annual_maintenance_cost": 8895.0,
+    "avg_annual_visits": 0.54
+  }
+}
