@@ -1,8 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 聊天介面
+
+首頁是油轉電顧問聊天介面。執行 `npm run dev` 後開啟 http://localhost:3000 即可體驗，不需啟動後端。
+
+- 提供換車評估、充電生活、用車成本、長途出遊四組預設問題，以及接續問題。
+- 支援自由輸入、Enter 傳送、Shift + Enter 換行、中文輸入法組字、等待回覆提示及新對話。
+- 回覆使用 `app/page.tsx` 的 `demoReply` 預設內容，沒有呼叫後端或 LLM。未來可替換成 API 傳輸邏輯。
+- 對話僅保留於頁面記憶體，重新整理或離開頁面即清除。
+
 ## API 測試台
 
-首頁提供 5 個後端端點的測試介面，包含可編輯 JSON 範例、HTTP 狀態、耗時、完整回應與瀏覽器可讀取的標頭。
+原本的 API 測試台移至 http://localhost:3000/api-test，桌面版聊天側欄也有入口。提供 5 個後端端點的測試介面，包含可編輯 JSON 範例、HTTP 狀態、耗時、完整回應與瀏覽器可讀取的標頭。
 
 先在 `backend/` 安裝 `requirements.txt` 依賴並執行 `python -m uvicorn main:app --reload --port 8000`，再在此目錄執行 `npm run dev -- --port 3000`，開啟 http://localhost:3000。
 

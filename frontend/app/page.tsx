@@ -1,84 +1,88 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import styles from "./chat.module.css";
 
-const endpoints = [
-  { path: "/api/ev-overview", method: "GET", name: "電動車總覽", description: "取得油車與 bZ4X 的基本比較資訊。", example: null },
-  { path: "/api/models", method: "GET", name: "可用車款", description: "取得 CDP 資料中可用的車款名稱，供成本比較使用。", example: null },
-  { path: "/api/suitability", method: "POST", name: "換車適合度", description: "傳入用車條件，測試個人化適合度分析。", example: { current_model: "RAV4", annual_mileage: 15000, budget: 1400000, usage_scenario: "commute", has_home_charging: true, residence_city: "臺北市" } },
-  { path: "/api/cost-comparison", method: "POST", name: "用車成本比較", description: "可改成不存在的車款測試 400，或移除必要欄位測試 422。", example: { current_model: "RAV4", purchase_year: 2015, annual_mileage: 15000, budget: 1400000, residence_city: "臺北市", usage_scenario: "commute" } },
-  { path: "/api/qa", method: "POST", name: "顧問問答", description: "測試問答端點；目前後端仍回傳示範回答。", example: { question: "我每年開 15000 公里，適合換成電動車嗎？", context: null } },
-] as const;
-type Result = { url: string; method: string; status: number; statusText: string; ok: boolean; elapsed: number; body: string; headers: string };
+const suggestions = [
+  { icon: "↗", category: "換車評估", question: "我的用車習慣適合換電動車嗎？", reply: "我們可以先從你的日常用車情境聊起。\n\n你目前開什麼車？平常主要是上下班通勤、接送家人，還是經常長途旅行？也可以一起告訴我每年的大約里程。", followup: "我主要是通勤，每年大約開 15,000 公里。" },
+  { icon: "⌁", category: "充電生活", question: "家裡不能裝充電樁，也能開電動車嗎？", reply: "讓我們先整理你的充電條件，作為後續評估的起點。\n\n你家裡或公司有固定停車位嗎？附近是否有你方便使用的充電站？你可以先描述停車環境。", followup: "我住公寓，公司附近有公共充電站。" },
+  { icon: "◎", category: "用車成本", question: "換成 bZ4X，用車費用會差多少？", reply: "我們可以把比較拆成購車、能源與保養三個部分。\n\n請先告訴我現有車款、購車年份，以及每年的大約里程。這個示範介面暫時不會計算或提供實際報價。", followup: "我開 2018 年的 RAV4，每年約 15,000 公里。" },
+  { icon: "⤳", category: "長途出遊", question: "假日常跑長途，該怎麼安排充電？", reply: "可以先從你最常走的一條路線開始討論。\n\n通常從哪裡出發、到哪裡？途中會在哪些地方休息，或是否會過夜？告訴我行程，我們可以用它來體驗對話流程。", followup: "我常從臺北開到臺中，通常當天來回。" },
+];
+type Message = { id: number; role: "user" | "assistant"; content: string };
+
+// Frontend-only demo adapter. Replace this with the LLM transport when available.
+function demoReply(question: string) {
+  return suggestions.find((item) => item.question === question)?.reply
+    ?? "謝謝你補充用車情境！\n\n目前這裡是聊天介面示範，尚未接上 AI，因此還不能依照你的訊息產生個人化分析。你可以繼續輸入問題體驗對話，或從預設問題探索其他主題。";
+}
 
 export default function Home() {
-  const [baseUrl, setBaseUrl] = useState(process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000");
-  const [selected, setSelected] = useState(0);
-  const [body, setBody] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [result, setResult] = useState<Result | null>(null);
-  const controller = useRef<AbortController | null>(null);
-  const endpoint = endpoints[selected];
-  useEffect(() => () => controller.current?.abort(), []);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [draft, setDraft] = useState("");
+  const [pending, setPending] = useState(false);
+  const [followup, setFollowup] = useState("");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nextId = useRef(0);
+  const transcript = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
+  const composing = useRef(false);
 
-  function chooseEndpoint(index: number) {
-    setSelected(index);
-    setBody(endpoints[index].example ? JSON.stringify(endpoints[index].example, null, 2) : "");
-    setError(""); setResult(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  useEffect(() => {
+    const region = transcript.current;
+    if (region) region.scrollTop = region.scrollHeight;
+  }, [messages, pending]);
+
+  function send(text: string) {
+    const question = text.trim();
+    if (!question || timer.current || question.length > 2000) return;
+    setMessages((current) => [...current, { id: nextId.current++, role: "user", content: question }]);
+    setDraft(""); setPending(true); setFollowup("");
+    timer.current = setTimeout(() => {
+      setMessages((current) => [...current, { id: nextId.current++, role: "assistant", content: demoReply(question) }]);
+      setFollowup(suggestions.find((item) => item.question === question)?.followup ?? "");
+      setPending(false); timer.current = null;
+    }, 650);
+    input.current?.focus();
   }
 
-  async function sendRequest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (controller.current) return;
-    setError(""); setResult(null);
-    let url: string;
-    try {
-      const base = new URL(baseUrl.trim());
-      if (!["http:", "https:"].includes(base.protocol) || base.username || base.password || base.search || base.hash) throw new Error();
-      url = base.href.replace(/\/+$/, "") + endpoint.path;
-    } catch {
-      setError("請輸入有效的 HTTP 或 HTTPS 後端網址，不要包含帳密、查詢參數或 #。"); return;
-    }
-    if (endpoint.method === "POST") {
-      try { JSON.parse(body); } catch { setError("Request Body 不是有效的 JSON，請檢查引號、逗號與括號。"); return; }
-    }
-    const abortController = new AbortController();
-    controller.current = abortController;
-    setBusy(true);
-    const start = performance.now();
-    let timedOut = false;
-    const timeout = setTimeout(() => { timedOut = true; abortController.abort(); }, 30000);
-    try {
-      const response = await fetch(url, {
-        method: endpoint.method,
-        headers: endpoint.method === "POST" ? { "Content-Type": "application/json", Accept: "application/json" } : { Accept: "application/json" },
-        body: endpoint.method === "POST" ? body : undefined,
-        signal: abortController.signal, cache: "no-store",
-      });
-      const raw = await response.text();
-      let formatted = raw;
-      try { formatted = JSON.stringify(JSON.parse(raw), null, 2); } catch { /* Preserve non-JSON responses. */ }
-      setResult({ url, method: endpoint.method, status: response.status, statusText: response.statusText, ok: response.ok, elapsed: Math.round(performance.now() - start), body: formatted || "（空白回應）", headers: Array.from(response.headers.entries()).map(([key, value]) => `${key}: ${value}`).join("\n") });
-    } catch {
-      setError(timedOut ? "請求超過 30 秒，已停止等待。請確認後端狀態後重試。" : abortController.signal.aborted ? "已取消請求。" : "無法連線。請確認後端已啟動、網址正確，且 CORS 允許目前前端來源；HTTPS 頁面也可能無法呼叫 HTTP 後端。");
-    } finally { clearTimeout(timeout); controller.current = null; setBusy(false); }
+  function reset() {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    setMessages([]); setDraft(""); setPending(false); setFollowup("");
+    input.current?.focus();
   }
 
-  return <main className="workspace">
-    <header className="page-header"><div><p className="eyebrow">TOYOTA / bZ4X · DEVELOPMENT</p><h1>後端 API 測試台</h1><p className="subtitle">選擇端點、調整資料，直接檢查後端的真實回應。</p></div><span className="environment">開發工具</span></header>
-    <form onSubmit={sendRequest}>
-      <section className="connection panel"><label htmlFor="base-url">後端網址 · Base URL</label><input id="base-url" type="url" required value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} disabled={busy} /><p className="hint">預設連線至本機 FastAPI。前端建議使用 localhost:3000，以符合後端 CORS 設定。</p></section>
-      <div className="test-grid">
-        <nav className="panel endpoint-list" aria-label="API 端點"><h2>API 端點 <span>05</span></h2>{endpoints.map((item, index) => <button type="button" key={item.path} disabled={busy} aria-pressed={selected === index} className={`endpoint ${selected === index ? "selected" : ""}`} onClick={() => chooseEndpoint(index)}><span className={`method ${item.method.toLowerCase()}`}>{item.method}</span><span><strong>{item.name}</strong><code>{item.path}</code></span></button>)}</nav>
-        <section className="panel request-panel"><div className="section-heading"><h2>請求內容</h2><span className={`method ${endpoint.method.toLowerCase()}`}>{endpoint.method}</span></div><code className="request-path">{endpoint.path}</code><p className="hint description">{endpoint.description}</p>
-          {endpoint.method === "POST" ? <><div className="body-label"><label htmlFor="request-body">Request Body · JSON</label><button type="button" className="text-button" disabled={busy} onClick={() => { setBody(JSON.stringify(endpoint.example, null, 2)); setError(""); }}>還原範例</button></div><textarea id="request-body" value={body} onChange={(e) => setBody(e.target.value)} disabled={busy} spellCheck={false} aria-describedby="json-hint" /><p id="json-hint" className="hint">可修改或移除欄位以測試後端驗證。車款名稱可先查詢「可用車款」。</p></> : <div className="empty-request">此 GET 請求不需要 Request Body。<br /><span>點擊下方按鈕即可取得資料。</span></div>}
-          <div className="actions"><button className="send-button" type="submit" disabled={busy}>{busy ? "請求中…" : "發送請求 →"}</button>{busy && <button className="cancel-button" type="button" onClick={() => controller.current?.abort()}>取消</button>}</div>
-        </section>
-        <section className="panel response-panel" aria-busy={busy}><div className="section-heading"><h2>回應結果</h2><span className="response-label">RESPONSE</span></div><div role="status" aria-live="polite">{busy && <p className="hint">等待後端回應，最多 30 秒…</p>}{error && <p className="error-message">{error}</p>}{result && <div className="result-summary"><span className={`status ${result.ok ? "success" : "failure"}`}>{result.status} {result.statusText || (result.ok ? "成功" : "錯誤")}</span><span>{result.elapsed} ms</span></div>}</div>
-          {result ? <><p className="result-url"><strong>{result.method}</strong> {result.url}</p><pre className="response-body" tabIndex={0} aria-label="回應內容">{result.body}</pre><details><summary>回應標頭（瀏覽器可讀取部分）</summary><pre className="headers">{result.headers || "（無可讀取標頭）"}</pre></details></> : !busy && !error && <div className="empty-response"><span className="empty-icon">{ "{ }" }</span><h3>準備好測試了</h3><p>發送請求後，這裡會顯示 HTTP 狀態、<br />回應時間與完整 JSON 或文字內容。</p></div>}
-        </section>
+  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); send(draft); }
+
+  return <main className={styles.shell}>
+    <aside className={styles.sidebar}>
+      <Link href="/" className={styles.brand} aria-label="TOYOTA 油轉電顧問首頁">TOYOTA<span>BEYOND ZERO</span></Link>
+      <button className={styles.newChat} onClick={reset}><span>＋</span> 開始新對話</button>
+      <div className={styles.sidebarSection}><p>一起探索電動生活</p>{suggestions.map((item) => <button key={item.category} disabled={pending} onClick={() => send(item.question)}><span>{item.icon}</span>{item.category}<span className={styles.arrow}>↗</span></button>)}</div>
+      <div className={styles.sidebarNote}><span className={styles.noteIcon}>bZ</span><h2>下一段旅程，從了解開始。</h2><p>從日常通勤到週末出遊，<br />找到適合自己的用車方式。</p></div>
+      <Link className={styles.devLink} href="/api-test">API 測試台 <span>↗</span></Link>
+    </aside>
+
+    <section className={styles.main} aria-label="油轉電顧問聊天">
+      <header className={styles.header}><div><span className={styles.headerMark}>bZ</span><strong>油轉電顧問</strong><span className={styles.headerSub}>你的電動生活，從這裡開始</span></div><span className={styles.demoBadge}>互動示範</span><button className={styles.mobileReset} onClick={reset}>新對話 ＋</button></header>
+      <div className={styles.transcript} ref={transcript}>
+        {messages.length === 0 ? <div className={styles.welcome}>
+          <span className={styles.heroMark}>bZ<span>↗</span></span><p className={styles.eyebrow}>HELLO, ELECTRIC LIFE</p><h1>換電動車，<br />從你的生活開始聊。</h1><p className={styles.intro}>你好，我是你的油轉電顧問。<br />關於換車、充電或用車成本，你想先了解什麼？</p>
+          <div className={styles.suggestions}>{suggestions.map((item) => <button key={item.category} onClick={() => send(item.question)}><span className={styles.cardTop}><span className={styles.cardIcon}>{item.icon}</span>{item.category}<span className={styles.arrow}>↗</span></span><strong>{item.question}</strong></button>)}</div>
+          <p className={styles.welcomeHint}>點選一個問題開始，或在下方輸入你的想法。</p>
+        </div> : <div className={styles.conversation}>
+          <p className={styles.conversationDate}>本次對話 · 前端示範</p>
+          <div role="log" aria-label="對話紀錄" aria-live="polite" aria-relevant="additions">
+            {messages.map((message) => <article key={message.id} className={`${styles.message} ${message.role === "user" ? styles.userMessage : styles.assistantMessage}`}><span className={styles.avatar}>{message.role === "user" ? "你" : "bZ"}</span><div className={styles.messageContent}><p className={styles.sender}>{message.role === "user" ? "你" : "油轉電顧問"}{message.role === "assistant" && <span>示範回覆</span>}</p><div className={styles.bubble}>{message.content}</div></div></article>)}
+          </div>
+          {pending && <div className={styles.typing} role="status">bZ <span>正在準備示範回覆…</span></div>}
+          {!pending && followup && <button className={styles.followup} onClick={() => send(followup)}>接著聊：{followup} <span>↗</span></button>}
+        </div>}
       </div>
-    </form><footer>回應來自實際後端；部分業務資料與 AI 問答目前仍為後端示範實作。</footer>
+      <div className={styles.composerArea}><form className={styles.composer} onSubmit={submit}><label className="sr-only" htmlFor="chat-message">輸入訊息</label><textarea ref={input} id="chat-message" rows={2} maxLength={2000} value={draft} onChange={(event) => setDraft(event.target.value)} onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && !composing.current && event.keyCode !== 229) { event.preventDefault(); send(draft); } }} placeholder="聊聊你的用車習慣，或問我一個問題…" aria-describedby="composer-help"/><div className={styles.composerBottom}><span id="composer-help">Enter 傳送 · Shift + Enter 換行<span className={styles.counter}> {draft.length} / 2000</span></span><button type="submit" disabled={pending || !draft.trim()} aria-label="傳送訊息">↑</button></div></form><p className={styles.disclaimer}>目前為前端示範，回覆為預設內容，尚未連接 AI。對話僅保留於本頁，重新整理即清除。</p></div>
+    </section>
   </main>;
 }
