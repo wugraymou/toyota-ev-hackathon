@@ -1,132 +1,191 @@
 {
+  "_meta": {
+    "basis": "回廠消費總金額 ÷ 持有年數；優先使用車齡0-4年的車輛（與bZ4X最長約4.4年對齊），0-4年樣本不足100時退用全部持有年數並標示 all_tenure_fallback",
+    "currency": "A國幣值，非台幣，不可與台幣金額相加",
+    "reference_date": "2026-10-14（資料快照日未知，持有年數以此估算）",
+    "visits_note": "annual_visits 為『近一年回廠次數』平均值",
+    "bz4x_note": "bZ4X 來自補充檔；其『近一年定保消費金額』『近一年維修次數』欄位為空，故僅用累計金額與近一年回廠次數"
+  },
   "ALTIS": {
-    "sample_size": 243023,
-    "avg_annual_maintenance_cost": 9697.0,
-    "avg_annual_visits": 0.79
-  },
-  "RAV4": {
-    "sample_size": 148149,
-    "avg_annual_maintenance_cost": 14773.0,
-    "avg_annual_visits": 1.32
-  },
-  "YARIS": {
-    "sample_size": 103514,
-    "avg_annual_maintenance_cost": 8782.0,
-    "avg_annual_visits": 0.73
-  },
-  "C CROSS": {
-    "sample_size": 82914,
-    "avg_annual_maintenance_cost": 11184.0,
-    "avg_annual_visits": 1.97
-  },
-  "VIOS": {
-    "sample_size": 80070,
-    "avg_annual_maintenance_cost": 7858.0,
-    "avg_annual_visits": 0.79
-  },
-  "C CROSS HV": {
-    "sample_size": 58989,
-    "avg_annual_maintenance_cost": 12855.0,
-    "avg_annual_visits": 2.78
-  },
-  "WISH": {
-    "sample_size": 56192,
-    "avg_annual_maintenance_cost": 6080.0,
-    "avg_annual_visits": 0.42
-  },
-  "CAMRY-L": {
-    "sample_size": 50990,
-    "avg_annual_maintenance_cost": 9126.0,
-    "avg_annual_visits": 0.58
-  },
-  "SIENTA": {
-    "sample_size": 45858,
-    "avg_annual_maintenance_cost": 13418.0,
-    "avg_annual_visits": 1.27
-  },
-  "RAV4 HV": {
-    "sample_size": 43808,
-    "avg_annual_maintenance_cost": 18577.0,
-    "avg_annual_visits": 2.7
-  },
-  "Y CROSS": {
-    "sample_size": 27249,
-    "avg_annual_maintenance_cost": 6720.0,
-    "avg_annual_visits": 2.94
+    "basis": "age_0_4y",
+    "sample_size": 16771,
+    "avg_tenure_yrs": 2.5,
+    "annual_maintenance_cost_cdp_units": 4153.0,
+    "annual_visits": 2.22
   },
   "ALTIS HV": {
-    "sample_size": 17333,
-    "avg_annual_maintenance_cost": 18993.0,
-    "avg_annual_visits": 2.68
-  },
-  "INNOVA": {
-    "sample_size": 17145,
-    "avg_annual_maintenance_cost": 5673.0,
-    "avg_annual_visits": 0.37
-  },
-  "CAMRY-h": {
-    "sample_size": 12629,
-    "avg_annual_maintenance_cost": 22856.0,
-    "avg_annual_visits": 1.19
-  },
-  "C-HR": {
-    "sample_size": 12208,
-    "avg_annual_maintenance_cost": 17099.0,
-    "avg_annual_visits": 1.46
-  },
-  "CAMRY": {
-    "sample_size": 9347,
-    "avg_annual_maintenance_cost": 18274.0,
-    "avg_annual_visits": 2.17
-  },
-  "COROLLA SP": {
-    "sample_size": 6232,
-    "avg_annual_maintenance_cost": 16165.0,
-    "avg_annual_visits": 2.22
-  },
-  "CAMRY HV": {
-    "sample_size": 5822,
-    "avg_annual_maintenance_cost": 21132.0,
-    "avg_annual_visits": 2.94
-  },
-  "PRIUS": {
-    "sample_size": 5778,
-    "avg_annual_maintenance_cost": 21055.0,
-    "avg_annual_visits": 1.7
-  },
-  "PRIUS C": {
-    "sample_size": 5629,
-    "avg_annual_maintenance_cost": 18407.0,
-    "avg_annual_visits": 1.64
+    "basis": "age_0_4y",
+    "sample_size": 6305,
+    "avg_tenure_yrs": 2.4,
+    "annual_maintenance_cost_cdp_units": 7531.0,
+    "annual_visits": 3.82
   },
   "AURIS": {
+    "basis": "all_tenure_fallback",
     "sample_size": 4326,
-    "avg_annual_maintenance_cost": 18781.0,
-    "avg_annual_visits": 1.46
+    "avg_tenure_yrs": 7.2,
+    "annual_maintenance_cost_cdp_units": 2599.0,
+    "annual_visits": 1.46
   },
-  "CROWN HV": {
-    "sample_size": 3414,
-    "avg_annual_maintenance_cost": 14075.0,
-    "avg_annual_visits": 3.17
+  "C CROSS": {
+    "basis": "age_0_4y",
+    "sample_size": 48316,
+    "avg_tenure_yrs": 2.3,
+    "annual_maintenance_cost_cdp_units": 3540.0,
+    "annual_visits": 2.14
   },
-  "PRIUS PHV": {
-    "sample_size": 2445,
-    "avg_annual_maintenance_cost": 16682.0,
-    "avg_annual_visits": 2.61
+  "C CROSS HV": {
+    "basis": "age_0_4y",
+    "sample_size": 41210,
+    "avg_tenure_yrs": 2.0,
+    "annual_maintenance_cost_cdp_units": 4991.0,
+    "annual_visits": 2.97
   },
-  "bZ4X": {
-    "sample_size": 3037,
-    "avg_annual_maintenance_cost": 10452.0,
-    "avg_annual_visits": 2.69
+  "C-HR": {
+    "basis": "age_0_4y",
+    "sample_size": 1250,
+    "avg_tenure_yrs": 3.4,
+    "annual_maintenance_cost_cdp_units": 3915.0,
+    "annual_visits": 2.05
   },
-  "PRIUS α": {
-    "sample_size": 2091,
-    "avg_annual_maintenance_cost": 20666.0,
-    "avg_annual_visits": 2.16
+  "CAMRY": {
+    "basis": "age_0_4y",
+    "sample_size": 4566,
+    "avg_tenure_yrs": 2.2,
+    "annual_maintenance_cost_cdp_units": 6769.0,
+    "annual_visits": 2.69
+  },
+  "CAMRY HV": {
+    "basis": "age_0_4y",
+    "sample_size": 3109,
+    "avg_tenure_yrs": 2.0,
+    "annual_maintenance_cost_cdp_units": 8087.0,
+    "annual_visits": 3.45
+  },
+  "CAMRY-L": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 50990,
+    "avg_tenure_yrs": 15.3,
+    "annual_maintenance_cost_cdp_units": 597.0,
+    "annual_visits": 0.58
+  },
+  "CAMRY-h": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 12629,
+    "avg_tenure_yrs": 12.7,
+    "annual_maintenance_cost_cdp_units": 1796.0,
+    "annual_visits": 1.19
+  },
+  "COROLLA SP": {
+    "basis": "age_0_4y",
+    "sample_size": 2914,
+    "avg_tenure_yrs": 2.5,
+    "annual_maintenance_cost_cdp_units": 4172.0,
+    "annual_visits": 2.59
   },
   "COROLLA X": {
+    "basis": "all_tenure_fallback",
     "sample_size": 1241,
-    "avg_annual_maintenance_cost": 8895.0,
-    "avg_annual_visits": 0.54
+    "avg_tenure_yrs": 10.8,
+    "annual_maintenance_cost_cdp_units": 827.0,
+    "annual_visits": 0.54
+  },
+  "CROWN HV": {
+    "basis": "age_0_4y",
+    "sample_size": 3414,
+    "avg_tenure_yrs": 2.1,
+    "annual_maintenance_cost_cdp_units": 6610.0,
+    "annual_visits": 3.17
+  },
+  "INNOVA": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 17145,
+    "avg_tenure_yrs": 13.6,
+    "annual_maintenance_cost_cdp_units": 416.0,
+    "annual_visits": 0.37
+  },
+  "PRIUS": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 5778,
+    "avg_tenure_yrs": 11.1,
+    "annual_maintenance_cost_cdp_units": 1900.0,
+    "annual_visits": 1.7
+  },
+  "PRIUS C": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 5629,
+    "avg_tenure_yrs": 10.0,
+    "annual_maintenance_cost_cdp_units": 1845.0,
+    "annual_visits": 1.64
+  },
+  "PRIUS PHV": {
+    "basis": "age_0_4y",
+    "sample_size": 1721,
+    "avg_tenure_yrs": 2.4,
+    "annual_maintenance_cost_cdp_units": 5584.0,
+    "annual_visits": 2.77
+  },
+  "PRIUS α": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 2091,
+    "avg_tenure_yrs": 7.7,
+    "annual_maintenance_cost_cdp_units": 2677.0,
+    "annual_visits": 2.16
+  },
+  "RAV4": {
+    "basis": "age_0_4y",
+    "sample_size": 25128,
+    "avg_tenure_yrs": 2.5,
+    "annual_maintenance_cost_cdp_units": 4290.0,
+    "annual_visits": 2.62
+  },
+  "RAV4 HV": {
+    "basis": "age_0_4y",
+    "sample_size": 22067,
+    "avg_tenure_yrs": 1.7,
+    "annual_maintenance_cost_cdp_units": 7219.0,
+    "annual_visits": 3.24
+  },
+  "SIENTA": {
+    "basis": "age_0_4y",
+    "sample_size": 6345,
+    "avg_tenure_yrs": 2.8,
+    "annual_maintenance_cost_cdp_units": 4324.0,
+    "annual_visits": 2.37
+  },
+  "VIOS": {
+    "basis": "age_0_4y",
+    "sample_size": 10134,
+    "avg_tenure_yrs": 2.4,
+    "annual_maintenance_cost_cdp_units": 3913.0,
+    "annual_visits": 1.98
+  },
+  "WISH": {
+    "basis": "all_tenure_fallback",
+    "sample_size": 56192,
+    "avg_tenure_yrs": 14.6,
+    "annual_maintenance_cost_cdp_units": 416.0,
+    "annual_visits": 0.42
+  },
+  "Y CROSS": {
+    "basis": "age_0_4y",
+    "sample_size": 27249,
+    "avg_tenure_yrs": 1.8,
+    "annual_maintenance_cost_cdp_units": 3759.0,
+    "annual_visits": 2.94
+  },
+  "YARIS": {
+    "basis": "age_0_4y",
+    "sample_size": 5700,
+    "avg_tenure_yrs": 3.6,
+    "annual_maintenance_cost_cdp_units": 3127.0,
+    "annual_visits": 1.6
+  },
+  "bZ4X": {
+    "basis": "age_0_4y",
+    "sample_size": 2999,
+    "avg_tenure_yrs": 1.4,
+    "annual_maintenance_cost_cdp_units": 7236.0,
+    "annual_visits": 2.69
   }
 }

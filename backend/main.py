@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 import cdp_lookup
+import bz4x_specs
 
 # 讀取 .env 檔案裡的環境變數（例如之後qa端點要用的 ANTHROPIC_API_KEY）
 load_dotenv()
@@ -118,7 +119,7 @@ def post_suitability(req: SuitabilityRequest):
 
 # ---------------------------------------------------------------------------
 # 3. POST /api/cost-comparison —— 完整成本比較
-# maintenance_cost_5yr、repair_visits_per_year 已接上CDP真實查表資料
+# maintenance（年化、非台幣）、repair_visits_per_year 已接上CDP真實查表資料
 # ---------------------------------------------------------------------------
 class CostComparisonRequest(BaseModel):
     current_model: str
@@ -148,24 +149,65 @@ def post_cost_comparison(req: CostComparisonRequest) -> Dict[str, Any]:
     car_age = datetime.now().year - req.purchase_year
     subsidy_eligible = car_age >= 10
 
-    # --- 保養成本/次數：已接上CDP真實數據 ---
-    maintenance_cost_5yr = {
-        "current_car": round(current_stats["avg_annual_maintenance_cost"] * 5),
-        "bz4x": round(bz4x_stats["avg_annual_maintenance_cost"] * 5),
+    # --- 保養成本/次數：CDP真實數據（年化、車齡對齊）。
+    # 金額幣別是「A國幣值，非台幣」，所以只回傳年化金額與比值，
+    # 不乘年數、也不加進台幣的 total_cost_5yr。 ---
+    cur_cost = current_stats["annual_maintenance_cost_cdp_units"]
+    bz_cost = bz4x_stats["annual_maintenance_cost_cdp_units"]
+    # 兩邊都是「車齡0-4年」口徑才算同齡可比；否則（例如很舊的車款退用全部持有年數）
+    # 車齡不同，比值會失真，這時不回傳比值。
+    comparable = current_stats["basis"] == "age_0_4y" and bz4x_stats["basis"] == "age_0_4y"
+    maintenance = {
+        "unit": "CDP金額單位（A國幣值，非台幣），僅供比較大小，不可與台幣相加",
+        "annual_cost": {"current_car": cur_cost, "bz4x": bz_cost},
+        "comparable_same_vehicle_age": comparable,
+        "bz4x_to_current_ratio": round(bz_cost / cur_cost, 2) if (comparable and cur_cost) else None,
+        "comparability_note": None if comparable else "此車款缺少0-4年車齡樣本，金額以全部持有年數估算，與bZ4X車齡不同，不提供比值。",
+        "basis": {"current_car": current_stats["basis"], "bz4x": bz4x_stats["basis"]},
+        "basis_note": cdp_lookup.get_meta().get("basis"),
     }
     repair_visits_per_year = {
-        "current_car": current_stats["avg_annual_visits"],
-        "bz4x": bz4x_stats["avg_annual_visits"],
+        "current_car": current_stats["annual_visits"],
+        "bz4x": bz4x_stats["annual_visits"],
+    }
+
+    # --- 里程成本：已接上真實油價/電價估算（見 bz4x_specs.py 註解，
+    # 油車那邊目前用的是一個籠統平均油耗，還沒依車款細分，之後可以再精修） ---
+    mileage_cost_5yr = {
+        "current_car": round(bz4x_specs.calc_cost_per_km(is_bz4x=False) * req.annual_mileage * 5),
+        "bz4x": round(bz4x_specs.calc_cost_per_km(is_bz4x=True) * req.annual_mileage * 5),
+    }
+
+    # --- 購車成本：已接上bZ4X官方牌價。current_car那邊還沒有依車款查真實定價，
+    # 先用一個佔位數字，之後可以比照CDP查表的做法，另外做一份「各車款新車定價」
+    # 的查表資料（如果需要，這個我也可以幫忙查） ---
+    purchase_cost = {
+        "current_car": 900000,  # TODO: 待補依車款細分的真實定價
+        "bz4x": bz4x_specs.BZ4X_SPECS["price_twd"],
+    }
+
+    # --- 5年總成本（台幣）= 購車 + 能源 − 補助中間值。
+    # 不含保養：保養金額是非台幣單位，無法相加。
+    # 注意 current_car 的購車成本仍是佔位數字，見 placeholder_fields。 ---
+    total_cost_5yr = {
+        "current_car": purchase_cost["current_car"] + mileage_cost_5yr["current_car"],
+        "bz4x": purchase_cost["bz4x"] + mileage_cost_5yr["bz4x"]
+        - (sum(([16000, 19100] if subsidy_eligible else [0, 0])) // 2),  # 粗略扣掉補助估計中間值
     }
 
     return {
-        # total_cost_5yr 目前還是假資料，等 purchase_cost / mileage_cost 都接上真邏輯後
-        # 這裡也要跟著改成真的加總，先留意這個欄位還不能直接拿去做最終呈現
-        "total_cost_5yr": {"current_car": 980000, "bz4x": 850000},
+        "total_cost_5yr": total_cost_5yr,
+        "total_cost_5yr_note": "台幣；僅含購車、能源、補助，不含保養與維修（CDP金額非台幣）。含佔位數字，非正式報價。",
+        "placeholder_fields": [
+            "breakdown.purchase_cost.current_car",
+            "breakdown.trade_in_estimate",
+            "nearby_charging_stations",
+            "max_range_km.current_car_note",
+        ],
         "breakdown": {
-            "purchase_cost": {"current_car": 900000, "bz4x": 1350000},  # TODO: 待補真實定價
-            "mileage_cost_5yr": {"current_car": 172500, "bz4x": 45000},  # TODO: 待補真實電耗/油耗數據
-            "maintenance_cost_5yr": maintenance_cost_5yr,
+            "purchase_cost": purchase_cost,
+            "mileage_cost_5yr": mileage_cost_5yr,
+            "maintenance": maintenance,
             "repair_visits_per_year": repair_visits_per_year,
             "government_subsidy_estimate": {
                 "eligible": subsidy_eligible,
@@ -174,12 +216,22 @@ def post_cost_comparison(req: CostComparisonRequest) -> Dict[str, Any]:
             },
             "trade_in_estimate": 450000,  # TODO: 待補真實邏輯
         },
-        "battery_warranty_note": "電池保固年限/里程與耗損曲線待補（見規格文件外部資料清單）",
-        "max_range_km": {"current_car_note": "依現有車型油箱續航", "bz4x": 615},  # TODO: 待補官方規格
+        "battery_warranty_note": (
+            f"bZ4X電池保固{bz4x_specs.BZ4X_SPECS['battery_warranty_years']}年或"
+            f"{bz4x_specs.BZ4X_SPECS['battery_warranty_km']:,}公里（以先到者為準），"
+            f"一般新車保固可延長至{bz4x_specs.BZ4X_SPECS['general_warranty_years']}年"
+            f"{bz4x_specs.BZ4X_SPECS['general_warranty_km']:,}公里"
+        ),
+        "max_range_km": {
+            "current_car_note": "依現有車型油箱續航，尚待依車款細分",  # TODO
+            "bz4x": bz4x_specs.BZ4X_SPECS["nedc_range_km"],
+        },
         "nearby_charging_stations": {"radius_km": 5, "count": 12},  # TODO: 待補真實資料源
         "data_source_note": {
             "current_car_sample_size": current_stats["sample_size"],
             "bz4x_sample_size": bz4x_stats["sample_size"],
+            "cdp_notes": cdp_lookup.get_meta(),
+            "spec_data_as_of": "2026/09，售價與油電價格屬於會變動的資訊，正式上台前建議重新核對",
         },
     }
 
