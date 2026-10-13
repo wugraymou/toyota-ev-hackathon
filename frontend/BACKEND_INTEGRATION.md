@@ -4,7 +4,7 @@
 
 ## 1. 前端目前提供什麼
 
-首頁包括六步需求診斷（年里程、停車／充電、預算、乘車情境、主要疑慮、現有車款），快速選項與自由文字、能源方案方向、報告版面、預約表單示意，以及「明確勾選同意後才顯示」的業務摘要。全部使用本機示範邏輯，不呼叫 API、不保存或傳送資料；預約表單也不會建立真實預約。成本、充電站、電池保固和殘值均以待串接狀態呈現，不是實際估算。
+首頁包括六步需求診斷（年里程、停車／充電、預算、乘車情境、主要疑慮、現有車款），快速選項與自由文字、能源方案方向、報告版面及預約表單示意。全部使用本機示範邏輯，不呼叫 API、不保存或傳送資料；預約表單也不會建立真實預約。成本、充電站、電池保固和殘值均以待串接狀態呈現，不是實際估算。前端目前不提供業務面談摘要功能。
 
 建議未來把 `frontend/app/page.tsx` 中的本機 `answerQuestion`／`recommendation`／報告準備邏輯抽換成 API client；互動流程與元件不必綁定任何特定 LLM 廠牌。
 
@@ -37,7 +37,7 @@ Content-Type: application/json
   "entry_topic": "charging",
   "message": "沒有家用充電，電動車適合我嗎？",
   "profile": {},
-  "consent": { "analytics": false, "sales_handoff": false }
+  "consent": { "analytics": false }
 }
 ```
 
@@ -100,16 +100,7 @@ POST /api/consultations/{consultation_id}/report
 
 `scenarios` 應區分油車／油電／純電方案，逐項包含購車與折舊、能源、保養、補助及持有總成本；資料不足就回 `null` 與缺少原因，不用假數字補齊。所有金額須帶幣別，所有估值要附資料日期、來源、使用假設及範圍。充電站資料要回傳更新時間及營運狀態；不可把示意站點當成即時查詢結果。
 
-### 3.3 試乘預約與業務摘要同意
-
-摘要提供／建立交接前，後端需記錄顧客明確同意、同意文字版本、時間、用途及目標門市。建議使用獨立操作：
-
-```http
-POST /api/consultations/{consultation_id}/sales-consent
-{ "granted": true, "notice_version": "2026-01", "purpose": "dealer_follow_up" }
-```
-
-顧客撤回時使用 `granted: false`，後端須停止後續交接並依保存政策處理資料。未取得同意不得把摘要寫入業務 CRM。前端只有顯示同意文案和操作按鈕；同意證據必須由後端持久化，不能以瀏覽器 state 當紀錄。
+### 3.3 試乘預約
 
 ```http
 POST /api/appointments
@@ -119,11 +110,11 @@ POST /api/appointments
   "contact": { "name": "顧客稱呼", "phone": "顧客提供的電話" },
   "request_type": "test_drive",
   "preferred_times": [],
-  "sales_handoff_consent_id": "consent-record-id"
+  "contact_consent": { "granted": true, "notice_version": "appointment-2026-01", "purpose": "test_drive_contact" }
 }
 ```
 
-回傳預約 `appointment_id`、狀態、門市及下一步。後端需驗證聯絡方式、門市可用性、同意紀錄及重複提交；成功後回傳可顯示給顧客的明確確認資訊。未串好門市／預約服務前，前端只應呈現「尚未送出」提示。
+回傳預約 `appointment_id`、狀態、門市及下一步。後端需驗證聯絡方式、門市可用性、聯繫同意及重複提交；成功後回傳可顯示給顧客的明確確認資訊。未串好門市／預約服務前，前端只應呈現「尚未送出」提示。此同意只涵蓋使用者主動提出的預約／聯繫，不涉及建立或交付業務摘要。
 
 ## 4. 錯誤格式與前端行為
 

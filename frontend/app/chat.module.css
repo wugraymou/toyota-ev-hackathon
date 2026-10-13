@@ -115,13 +115,7 @@
 .modal .eyebrow { margin:0 0 8px; }
 .modal h2 { font-size:22px; font-weight:600; }
 .modalIntro { color:#4f5c49; font-size:14px; line-height:1.9; margin-top:10px; }
-.consentLabel { display:flex; align-items:flex-start; gap:11px; padding:15px; border:1px solid #e1e7d9; border-radius:10px; margin-top:20px; cursor:pointer; }
-.consentLabel input { flex-shrink:0; width:17px; height:17px; accent-color:#526744; margin-top:2px; }
-.consentLabel > span { font-size:14px; line-height:1.8; }
-.consentLabel small { display:block; color:#56614f; font-size:12px; line-height:1.8; margin-top:7px; }
-.summaryPreview { max-height:220px; overflow:auto; white-space:pre-wrap; padding:14px; margin:13px 0; border-radius:8px; background:#f4f6f1; color:#55604e; font:10px/1.8 var(--font-geist-mono),monospace; }
 .modal > .primaryAction { width:100%; }
-.privacyHint { padding:13px; margin-top:13px; border-radius:8px; background:#f1f4ed; color:#4f5c49; font-size:13px; }
 .bookingForm { display:flex; flex-direction:column; gap:13px; margin-top:8px; }
 .bookingForm > label { display:flex; flex-direction:column; gap:7px; color:#3d4c37; font-size:13px; }
 .bookingForm input,.bookingForm select { width:100%; min-height:44px; border:1px solid #cbd4c3; border-radius:7px; padding:10px 12px; background:#fff; color:#263426; font:14px Arial,"Microsoft JhengHei",sans-serif; }

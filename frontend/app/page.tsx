@@ -37,10 +37,8 @@ export default function Home() {
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
   const [showReport, setShowReport] = useState(false);
-  const [consent, setConsent] = useState(false);
-  const [modal, setModal] = useState<"summary" | "booking" | null>(null);
+  const [modal, setModal] = useState<"booking" | null>(null);
   const [bookingSent, setBookingSent] = useState(false);
-  const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextId = useRef(0);
   const transcript = useRef<HTMLDivElement>(null);
@@ -54,7 +52,7 @@ export default function Home() {
     setMessages((current) => [...current, { id: nextId.current++, role, content }]);
   }
   function startDiagnosis(opening?: string) {
-    setShowReport(false); setStep(0); setAnswers({}); setMessages([]); setConsent(false);
+    setShowReport(false); setStep(0); setAnswers({}); setMessages([]);
     if (opening) append("user", opening);
     append("assistant", "我會用幾個簡短問題了解你的用車情境，再整理可比較的能源方案。你可以跳過不想回答的項目。先從日常里程開始：你一年大約開多少公里？");
   }
@@ -92,15 +90,9 @@ export default function Home() {
   function sendFreeText(event: FormEvent<HTMLFormElement>) { event.preventDefault(); sendDraft(); }
   function reset() {
     if (timer.current) clearTimeout(timer.current);
-    timer.current = null; setMessages([]); setAnswers({}); setDraft(""); setPending(false); setStep(-1); setShowReport(false); setConsent(false); setModal(null);
+    timer.current = null; setMessages([]); setAnswers({}); setDraft(""); setPending(false); setStep(-1); setShowReport(false); setModal(null);
     input.current?.focus();
   }
-  const summary = `TOYOTA AI 智慧顧問｜顧客需求摘要（前端示範）\n年行駛里程：${answers.mileage ?? "未提供"}\n停車與充電：${answers.parking ?? "未提供"}\n預算：${answers.budget ?? "未提供"}\n乘車情境：${answers.family ?? "未提供"}\n主要疑慮：${answers.concern ?? "未提供"}\n現有車款：${answers.vehicle ?? "未提供"}\n方案方向：${recommendation(answers).name}\n注意：此摘要為本頁示範資料，尚未提交或傳送。`;
-  async function copySummary() {
-    try { await navigator.clipboard.writeText(summary); setCopied(true); setTimeout(() => setCopied(false), 1800); }
-    catch { setCopied(false); }
-  }
-
   return <main className={styles.shell}>
     <aside className={styles.sidebar}>
       <Link href="/" className={styles.brand}>TOYOTA<span>BEYOND ZERO</span></Link>
@@ -123,7 +115,7 @@ export default function Home() {
         </div>
         <section className={styles.answersPanel}><div><h3>本次診斷條件</h3><p>方案將隨需求補充更新。</p></div><div className={styles.answerChips}>{questions.map((question) => <span key={question.key}><strong>{question.prompt.split("：")[0].split("？")[0]}</strong>{answers[question.key] ?? "未提供"}</span>)}</div></section>
         <details className={styles.assumptions}><summary>資料來源、估算假設與限制</summary><p>正式報告應標示能源價格基準日、年行駛里程、持有期間、保養數據、補助資格及折現假設。殘值是區間估算而非保證售價；電池健康與保固條件依實際車款及合約為準。此示範尚未連接上述資料來源。</p></details>
-        <div className={styles.reportActions}><button className={styles.primaryAction} onClick={() => { setBookingSent(false); setModal("booking"); }}>預約試乘／聯繫業務 <span>↗</span></button><button className={styles.secondaryAction} onClick={() => { setConsent(false); setModal("summary"); }}>準備面談摘要 <span>→</span></button></div>
+        <div className={styles.reportActions}><button className={styles.primaryAction} onClick={() => { setBookingSent(false); setModal("booking"); }}>預約試乘／聯繫業務 <span>↗</span></button></div>
         <p className={styles.reportNote}>提供試乘入口不代表已完成預約；正式送出需等待後端與門市流程串接。</p>
       </div></div> : <>
         {step >= 0 && step < questions.length && <div className={styles.progress}><div><span>需求診斷</span><span>{step + 1} / {questions.length}</span></div><span className={styles.progressTrack}><span style={{ width: `${((step + 1) / questions.length) * 100}%` }} /></span></div>}
@@ -146,13 +138,8 @@ export default function Home() {
       </>}
     </section>
 
-    {modal && <div className={styles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(null); }}><section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className={styles.modalClose} aria-label="關閉" onClick={() => setModal(null)}>×</button>{modal === "summary" ? <>
-      <p className={styles.eyebrow}>CUSTOMER HANDOFF</p><h2 id="modal-title">面談需求摘要</h2><p className={styles.modalIntro}>只有在你明確同意後，才可將摘要提供給門市業務參考。</p>
-      <label className={styles.consentLabel}><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>我同意分享以下需求摘要給我選擇聯繫的 TOYOTA 門市，以便後續諮詢。<small>目前為介面示範；勾選不會傳送資料。正式上線前需串接同意紀錄、目的說明與撤回方式。</small></span></label>
-      {consent && <><pre className={styles.summaryPreview}>{summary}</pre><button className={styles.primaryAction} onClick={copySummary}>{copied ? "已複製摘要 ✓" : "複製摘要（僅限本機）"}</button></>}
-      {!consent && <p className={styles.privacyHint}>未勾選同意前，不顯示可分享摘要。</p>}
-    </> : <>
+    {modal && <div className={styles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(null); }}><section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className={styles.modalClose} aria-label="關閉" onClick={() => setModal(null)}>×</button>
       <p className={styles.eyebrow}>TEST DRIVE</p><h2 id="modal-title">預約試乘／聯繫業務</h2>{bookingSent ? <div className={styles.bookingNotice}><span>✓</span><h3>示範表單已完成</h3><p>資料尚未送出，也沒有建立真實預約。接上門市與預約 API 後，這裡會顯示實際處理結果。</p><button className={styles.secondaryAction} onClick={() => setModal(null)}>返回報告</button></div> : <form className={styles.bookingForm} onSubmit={(event) => { event.preventDefault(); setBookingSent(true); }}><p className={styles.modalIntro}>填寫聯繫偏好，體驗預約流程介面。此表單不會傳送資料。</p><label>偏好門市<select required defaultValue=""><option value="" disabled>選擇門市（示範）</option><option>臺北展示中心（示範）</option><option>新北展示中心（示範）</option><option>自行選擇鄰近門市</option></select></label><label>偏好服務<select required defaultValue=""><option value="" disabled>請選擇</option><option>預約試乘</option><option>能源方案諮詢</option><option>了解 bZ4X</option><option>了解油電車款</option></select></label><label>方便聯絡時段<select required defaultValue=""><option value="" disabled>請選擇</option><option>平日白天</option><option>平日晚上</option><option>週末</option><option>不限</option></select></label><label>稱呼<input required maxLength={40} placeholder="例如：陳小姐" /></label><label>聯絡方式<input required maxLength={80} placeholder="電話或 Email（示範，不會送出）" /></label><label className={styles.bookingConsent}><input type="checkbox" required /><span>我同意為此聯繫需求提供上述資料。<small>本示範不會送出或保存資料；正式預約須由後端依告知內容記錄同意。</small></span></label><button className={styles.primaryAction} type="submit">預覽預約流程 <span>→</span></button></form>}
-    </>}</section></div>}
+    </section></div>}
   </main>;
 }
