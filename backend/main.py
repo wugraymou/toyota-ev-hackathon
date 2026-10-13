@@ -28,7 +28,7 @@ import bz4x_specs
 load_dotenv()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-app = FastAPI(title="TOYOTA bZ4X 油轉電顧問工具 API", version="0.2.0")
+app = FastAPI(title="TOYOTA bZ4X 油轉電顧問工具 API", version="0.3.0")
 
 # ---------------------------------------------------------------------------
 # CORS 設定：允許前端開發伺服器呼叫這支後端。
@@ -53,7 +53,10 @@ app.add_middleware(
 @app.get("/api/ev-overview")
 def get_ev_overview():
     return {
-        "avg_mileage_cost_per_km": {"gas": 2.3, "bz4x": 0.6},
+        "avg_mileage_cost_per_km": {
+            "gas": round(bz4x_specs.calc_cost_per_km(is_bz4x=False), 2),
+            "bz4x": round(bz4x_specs.calc_cost_per_km(is_bz4x=True), 2),
+        },
         "avg_purchase_price_range": {
             "gas_hev_compact_suv": [850000, 1050000],
             "bz4x": [1300000, 1450000],
@@ -154,21 +157,30 @@ def post_cost_comparison(req: CostComparisonRequest) -> Dict[str, Any]:
     # 不乘年數、也不加進台幣的 total_cost_5yr。 ---
     cur_cost = current_stats["annual_maintenance_cost_cdp_units"]
     bz_cost = bz4x_stats["annual_maintenance_cost_cdp_units"]
-    # 兩邊都是「車齡0-4年」口徑才算同齡可比；否則（例如很舊的車款退用全部持有年數）
+    # 兩邊都是「車齡1-4.5年」口徑才算同齡可比；否則（例如很舊的車款退用全部持有年數）
     # 車齡不同，比值會失真，這時不回傳比值。
-    comparable = current_stats["basis"] == "age_0_4y" and bz4x_stats["basis"] == "age_0_4y"
+    comparable = current_stats["basis"] == "age_1_4y" and bz4x_stats["basis"] == "age_1_4y"
     maintenance = {
         "unit": "CDP金額單位（A國幣值，非台幣），僅供比較大小，不可與台幣相加",
         "annual_cost": {"current_car": cur_cost, "bz4x": bz_cost},
         "comparable_same_vehicle_age": comparable,
         "bz4x_to_current_ratio": round(bz_cost / cur_cost, 2) if (comparable and cur_cost) else None,
-        "comparability_note": None if comparable else "此車款缺少0-4年車齡樣本，金額以全部持有年數估算，與bZ4X車齡不同，不提供比值。",
+        "comparability_note": None if comparable else "此車款缺少持有1-4.5年的樣本，金額以全部持有年數估算，與bZ4X車齡不同，不提供比值。",
         "basis": {"current_car": current_stats["basis"], "bz4x": bz4x_stats["basis"]},
         "basis_note": cdp_lookup.get_meta().get("basis"),
     }
     repair_visits_per_year = {
         "current_car": current_stats["annual_visits"],
         "bz4x": bz4x_stats["annual_visits"],
+    }
+    # 近一年定期保養金額 / 近一年維修次數（CDP欄位平均值；金額同為非台幣單位）
+    maintenance["routine_service_cost_1y"] = {
+        "current_car": current_stats["routine_service_cost_1y"],
+        "bz4x": bz4x_stats["routine_service_cost_1y"],
+    }
+    maintenance["repairs_1y"] = {
+        "current_car": current_stats["repairs_1y"],
+        "bz4x": bz4x_stats["repairs_1y"],
     }
 
     # --- 里程成本：已接上真實油價/電價估算（見 bz4x_specs.py 註解，
