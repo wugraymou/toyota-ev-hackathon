@@ -9,6 +9,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - 回覆使用 `app/page.tsx` 的 `demoReply` 預設內容，沒有呼叫後端或 LLM。未來可替換成 API 傳輸邏輯。
 - 對話僅保留於頁面記憶體，重新整理或離開頁面即清除。
 
+提案範圍與建議 API 格式請見 [後端串接規格](./BACKEND_INTEGRATION.md)。
+
 ## API 測試台
 
 原本的 API 測試台移至 http://localhost:3000/api-test，桌面版聊天側欄也有入口。提供 5 個後端端點的測試介面，包含可編輯 JSON 範例、HTTP 狀態、耗時、完整回應與瀏覽器可讀取的標頭。
