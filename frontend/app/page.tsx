@@ -16,7 +16,7 @@ const questions = [
   { key: "budget", prompt: "換車時，希望優先考量哪個預算區間？", options: ["100 萬元以內", "100–150 萬元", "150–200 萬元", "先了解各方案再決定"] },
   { key: "family", prompt: "平常主要的乘車情境是？", options: ["一人通勤", "家庭接送", "常載多人或行李", "通勤與旅行都會"] },
   { key: "concern", prompt: "目前最想先釐清的疑慮是？", options: ["充電是否方便", "電池保固與衰退", "總持有成本與殘值", "長途行程與補電"] },
-  { key: "vehicle", prompt: "你目前開什麼車？（也可以先選「暫不提供」）", options: ["Toyota RAV4", "Toyota Corolla Cross", "Toyota Yaris", "其他車款／暫不提供"] },
+  { key: "vehicle", prompt: "你目前開什麼車？", options: ["Toyota RAV4", "Toyota Corolla Cross", "Toyota Yaris", "其他車款"] },
 ] as const;
 type AnswerKey = (typeof questions)[number]["key"];
 type Answers = Partial<Record<AnswerKey, string>>;
