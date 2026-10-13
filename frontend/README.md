@@ -6,7 +6,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 - 提供換車評估、充電生活、用車成本、長途出遊四組預設問題，以及接續問題。
 - 支援自由輸入、Enter 傳送、Shift + Enter 換行、中文輸入法組字、等待回覆提示及新對話。
-- 回覆使用 `app/page.tsx` 的 `demoReply` 預設內容，沒有呼叫後端或 LLM。未來可替換成 API 傳輸邏輯。
+- 診斷使用前端示範邏輯，沒有呼叫後端或 LLM。未來可替換成 API 傳輸邏輯。
 - 對話僅保留於頁面記憶體，重新整理或離開頁面即清除。
 
 提案範圍與建議 API 格式請見 [後端串接規格](./BACKEND_INTEGRATION.md)。
